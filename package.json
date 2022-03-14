@@ -6,9 +6,10 @@
   "scripts": {
     "build": "yarn tsc",
     "start": "yarn tsc && node dist/server.js",
-    "watch": "tsc-watch --esModuleInterop src/server.ts --outDir ./dist --onSuccess \"node ./dist/server.js\"",
     "lint": "eslint -c .eslintrc.js 'src/**/*.ts' --fix",
-    "test": "ENV=test db-migrate up --config ./database.json -e test && yarn run build && jasmine && db-migrate reset --config ./database.json -e test"
+    "test": "ENV=test db-migrate up --config ./database.json -e test && yarn run build && jasmine && db-migrate reset --config ./database.json -e test",
+    "migrate-up": "db-migrate up --config ./database.json -e dev",
+    "migrate-down": "db-migrate reset --config ./database.json -e dev"
   },
   "author": "Udacity",
   "license": "ISC",
