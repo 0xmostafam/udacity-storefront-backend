@@ -10,12 +10,12 @@ export type Order = {
   }[];
 };
 
-const reformatOrders = (sqlResult: any[], userID: number) => {
-  let orders: Order[] = [];
+const reformatOrders = (sqlResult: any[], userID: number): Order[] => {
+  const orders: Order[] = [];
 
   sqlResult.forEach((currentOrder) => {
     if (!orders.some((order) => order.orderID === currentOrder.id)) {
-      let newOrder: Order = {
+      const newOrder: Order = {
         orderID: currentOrder.id,
         userID: userID,
         status: currentOrder.status,
@@ -54,12 +54,9 @@ export class OrderQuries {
         WHERE
           orders.users_id = ($1)`;
       const result = await Client.query(sql, [id]);
-
-      console.log(result.rows);
-
       return reformatOrders(result.rows, id);
     } catch (err) {
-      throw new Error(`Could not get orders. Error: ${err}`);
+      throw { error: `Could not get orders. Error: ${err}` };
     }
   }
 
@@ -83,7 +80,7 @@ export class OrderQuries {
 
       return reformatOrders(result.rows, id);
     } catch (err) {
-      throw new Error(`Could not find order with id : ${id}. Error: ${err}`);
+      throw { error: `Could not find order. Error: ${err}` };
     }
   }
 }

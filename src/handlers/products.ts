@@ -1,4 +1,5 @@
 import express, { Request, Response } from "express";
+import { auth } from "../middleware/auth";
 import { Product, ProductQuries } from "../models/products";
 
 const quries = new ProductQuries();
@@ -6,9 +7,9 @@ const quries = new ProductQuries();
 const index = async (req: Request, res: Response) => {
   try {
     const products = await quries.index();
-    res.json(products);
+    return res.status(200).json(products);
   } catch (err) {
-    console.log(err);
+    return res.status(400).json(err);
   }
 };
 
@@ -17,9 +18,9 @@ const show = async (req: Request, res: Response) => {
     if (isNaN(parseInt(req.params.id))) throw "ID must be an integer";
 
     const products = await quries.show(parseInt(req.params.id));
-    res.json(products);
+    return res.status(200).json(products);
   } catch (err) {
-    console.log(err);
+    return res.status(400).json(err);
   }
 };
 
@@ -34,17 +35,16 @@ const create = async (req: Request, res: Response) => {
     };
 
     const newProduct = await quries.create(product);
-    res.json(newProduct);
+    return res.status(200).json(newProduct);
   } catch (err) {
-    res.status(400);
-    res.json(err);
+    return res.status(400).json(err);
   }
 };
 
 const productsRoutes = (app: express.Application) => {
   app.get("/products", index);
   app.get("/products/:id", show);
-  app.post("/products", create);
+  app.post("/products", auth, create);
 };
 
 export default productsRoutes;

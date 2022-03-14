@@ -1,4 +1,4 @@
-import Client from "../database";
+import Client from '../database';
 
 export type Product = {
   id?: number;
@@ -8,10 +8,9 @@ export type Product = {
 };
 
 export class ProductQuries {
-  async index(): Promise<Product[]> {
-    try {
-      const conn = await Client.connect();
-      const sql = `SELECT 
+	async index(): Promise<Product[]> {
+		try {
+			const sql = `SELECT 
         products.id,
         products.name,
         products.price,
@@ -20,19 +19,17 @@ export class ProductQuries {
         FROM 
         products`;
 
-      const result = await conn.query(sql);
+			const result = await Client.query(sql);
 
-      conn.release();
+			return result.rows;
+		} catch (err) {
+			throw { error: `Could not get products. Error: ${err}` };
+		}
+	}
 
-      return result.rows;
-    } catch (err) {
-      throw new Error(`Could not get orders. Error: ${err}`);
-    }
-  }
-
-  async show(id: number): Promise<Product> {
-    try {
-      const sql = `SELECT 
+	async show(id: number): Promise<Product> {
+		try {
+			const sql = `SELECT 
       products.id,
       products.name,
       products.price,
@@ -43,28 +40,22 @@ export class ProductQuries {
       
       WHERE
       products.id = ($1)`;
-      const conn = await Client.connect();
-      const result = await conn.query(sql, [id]);
+			const result = await Client.query(sql, [id]);
 
-      conn.release();
+			return result.rows[0];
+		} catch (err) {
+			throw { error: `Could not find product with id : ${id}. Error: ${err}` };
+		}
+	}
 
-      return result.rows[0];
-    } catch (err) {
-      throw new Error(`Could not find order with id : ${id}. Error: ${err}`);
-    }
-  }
+	async create(p: Product): Promise<Product> {
+		try {
+			const sql = 'INSERT INTO products (name, price, category) VALUES($1, $2, $3) RETURNING *';
+			const result = await Client.query(sql, [p.name, p.price, p.category]);
 
-  async create(p: Product): Promise<Product> {
-    try {
-      const sql = `INSERT INTO products (name, price, category) VALUES($1, $2, $3) RETURNING *`;
-      const conn = await Client.connect();
-      const result = await conn.query(sql, [p.name, p.price, p.category]);
-
-      conn.release();
-
-      return result.rows[0];
-    } catch (err) {
-      throw new Error(`Could not find product. Error: ${err}`);
-    }
-  }
+			return result.rows[0];
+		} catch (err) {
+			throw { error: `Could not create product. Error: ${err}` };
+		}
+	}
 }
