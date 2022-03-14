@@ -1,4 +1,4 @@
-import Client from "../database";
+import Client from '../database';
 
 export type Order = {
   orderID: number;
@@ -10,36 +10,46 @@ export type Order = {
   }[];
 };
 
-const reformatOrders = (sqlResult: any[], userID: number): Order[] => {
-  const orders: Order[] = [];
+type OrderQueryOutput = {
+  id: number;
+  quantity: number;
+  name: string;
+  status: string;
+};
 
-  sqlResult.forEach((currentOrder) => {
-    if (!orders.some((order) => order.orderID === currentOrder.id)) {
-      const newOrder: Order = {
-        orderID: currentOrder.id,
-        userID: userID,
-        status: currentOrder.status,
-        products: [],
-      };
-      orders.push(newOrder);
-    }
+const reformatOrders = (
+	sqlResult: OrderQueryOutput[],
+	userID: number
+): Order[] => {
+	const orders: Order[] = [];
 
-    const newProduct = {
-      productName: currentOrder.name as string,
-      quantity: currentOrder.quantity as number,
-    };
-    orders
-      .find((order) => order.orderID === currentOrder.id)
-      ?.products?.push(newProduct);
-  });
+	sqlResult.forEach((currentOrder) => {
+		if (!orders.some((order) => order.orderID === currentOrder.id)) {
+			const newOrder: Order = {
+				orderID: currentOrder.id,
+				userID: userID,
+				status: currentOrder.status,
+				products: [],
+			};
+			orders.push(newOrder);
+		}
 
-  return orders;
+		const newProduct = {
+			productName: currentOrder.name,
+			quantity: currentOrder.quantity,
+		};
+		orders
+			.find((order) => order.orderID === currentOrder.id)
+			?.products?.push(newProduct);
+	});
+
+	return orders;
 };
 
 export class OrderQuries {
-  async getOrderByUserID(id: number): Promise<Order[]> {
-    try {
-      const sql = `SELECT 
+	async getOrderByUserID(id: number): Promise<Order[]> {
+		try {
+			const sql = `SELECT 
         orders.id as id,
         products.name as name,
         order_products.quantity as quantity,
@@ -53,16 +63,16 @@ export class OrderQuries {
         
         WHERE
           orders.users_id = ($1)`;
-      const result = await Client.query(sql, [id]);
-      return reformatOrders(result.rows, id);
-    } catch (err) {
-      throw { error: `Could not get orders. Error: ${err}` };
-    }
-  }
+			const result = await Client.query(sql, [id]);
+			return reformatOrders(result.rows, id);
+		} catch (err) {
+			throw { error: `Could not get orders. Error: ${err}` };
+		}
+	}
 
-  async completedOrders(id: number): Promise<Order[]> {
-    try {
-      const sql = `SELECT 
+	async completedOrders(id: number): Promise<Order[]> {
+		try {
+			const sql = `SELECT 
       orders.id as id,
       products.name as name,
       order_products.quantity as quantity,
@@ -76,11 +86,11 @@ export class OrderQuries {
       
       WHERE
         orders.users_id = ($1) AND status=($2)`;
-      const result = await Client.query(sql, [id, "COMPLETE"]);
+			const result = await Client.query(sql, [id, 'COMPLETE']);
 
-      return reformatOrders(result.rows, id);
-    } catch (err) {
-      throw { error: `Could not find order. Error: ${err}` };
-    }
-  }
+			return reformatOrders(result.rows, id);
+		} catch (err) {
+			throw { error: `Could not find order. Error: ${err}` };
+		}
+	}
 }
